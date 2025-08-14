@@ -17,6 +17,13 @@
       margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text); background:var(--bg); display:flex; flex-direction:column;
     }
+    /* 上部ガイドバー */
+    .guidebar{
+      background:#ffeeba; padding:10px; text-align:center; font-weight:bold;
+      border-bottom:2px solid #e0a800;
+    }
+    .guidebar a{ color:#000; text-decoration:none }
+    /* レイアウト */
     .app{display:grid; grid-template-columns:360px 1fr; gap:16px; padding:14px; flex:1}
     @media(max-width:980px){.app{grid-template-columns:1fr; min-height:100vh}}
     .panel{background:var(--panel); border:1px solid var(--muted); border-radius:16px; padding:14px 14px 16px}
@@ -42,11 +49,21 @@
     .small{font-size:12px; opacity:.9; color:var(--text)}
     .hidden{display:none}
     .pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; background:#f3f4f6; border:1px solid #e5e7eb; padding:6px 10px; border-radius:999px; color:#111}
-    footer{position:fixed; left:0; right:0; bottom:0; font-size:12px; text-align:center; padding:10px; background:#ffffff; color:#111; border-top:1px solid #e5e7eb}
-    footer a{color:var(--accent)}
+    /* 下部ライセンス固定バー */
+    .licensebar{
+      position:fixed; left:0; right:0; bottom:5px; background:#fff; color:#000;
+      padding:6px 10px; text-align:center; font-size:12px; border-top:1px solid #e5e7eb;
+      box-shadow:0 -1px 4px rgba(0,0,0,0.08); z-index:999;
+    }
+    .licensebar a{ color:#000; text-decoration:underline }
   </style>
 </head>
 <body>
+
+  <!-- ★ 上部：使い方・注意事項リンク（常にページ最上部に表示） -->
+  <div class="guidebar">
+    <a href="howto.html">📄 使い方・注意事項はこちら</a>
+  </div>
 
   <div class="app">
     <aside class="panel">
@@ -156,7 +173,11 @@
         <button id="saveSVG" class="primary">SVG保存</button>
       </div>
       <div class="small">※ 保存した画像は、そのまま <strong>ARタトゥー試着</strong> にアップして使えます。</div>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><span class="pill">モノグラム既定: 中央縦並び</span><span class="pill">最大10文字</span><span class="pill">フォント10種</span></div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="pill">モノグラム既定: 中央縦並び</span>
+        <span class="pill">最大10文字</span>
+        <span class="pill">フォント10種</span>
+      </div>
     </aside>
 
     <main class="panel stage">
@@ -183,10 +204,11 @@
     </main>
   </div>
 
-  <footer>
+  <!-- ★ 下部：ライセンス表記（固定表示） -->
+  <div class="licensebar">
     本アプリでは Google Fonts を利用しています。フォントは SIL Open Font License 1.1 のもとでライセンスされています。
     詳細: <a href="https://fonts.google.com/" target="_blank">https://fonts.google.com/</a>
-  </footer>
+  </div>
 
   <script>
     const $ = (s)=>document.querySelector(s);
@@ -256,7 +278,7 @@
       const style = `font-family:${state.font}; font-size:${state.size}px; letter-spacing:${state.track}px; fill:${state.fill}; stroke:${state.stroke}; stroke-width:${state.sw}; paint-order: stroke fill; transform:skewX(${state.slant}deg);`;
       textNode.setAttribute('style', style);
       pathText.setAttribute('style', style);
-      // 影（白背景なのでデフォルト0）
+      // 影（デフォ0）
       const fe = svg.querySelector('#shadowFilter feDropShadow');
       fe.setAttribute('dx', state.sx); fe.setAttribute('dy', state.sy); fe.setAttribute('stdDeviation', state.blur);
       group.setAttribute('filter', state.blur>0 ? 'url(#shadowFilter)':'' );
@@ -293,7 +315,10 @@
       group.setAttribute('transform', `translate(800,600) rotate(${state.rot})`);
       if(state.mode==='normal') updateNormal(); else updateMonogram();
       // UIラベル
-      ui.sizeVal.textContent = state.size; ui.trackVal.textContent = state.track; ui.slantVal.textContent = `${state.slant}°`; ui.arcVal.textContent = `${state.arc}%`; ui.rotVal.textContent = `${state.rot}°`; ui.overlapVal.textContent = `${state.overlap}%`; ui.blurVal.textContent = state.blur; ui.sxVal.textContent = state.sx; ui.syVal.textContent = state.sy;
+      const U=ui; U.sizeVal&&(U.sizeVal.textContent = state.size); U.trackVal&&(U.trackVal.textContent = state.track);
+      U.slantVal&&(U.slantVal.textContent = `${state.slant}°`); U.arcVal&&(U.arcVal.textContent = `${state.arc}%`);
+      U.rotVal&&(U.rotVal.textContent = `${state.rot}°`); U.overlapVal&&(U.overlapVal.textContent = `${state.overlap}%`);
+      U.blurVal&&(U.blurVal.textContent = state.blur); U.sxVal&&(U.sxVal.textContent = state.sx); U.syVal&&(U.syVal.textContent = state.sy);
     }
 
     // 入力バインド
@@ -338,7 +363,7 @@
       state.slant = -10 + Math.floor(Math.random()*20);
       state.arc = -50 + Math.floor(Math.random()*100);
       state.rot = -15 + Math.floor(Math.random()*30);
-      state.fill = '#000000'; // 常に黒出力推奨
+      state.fill = '#000000';
       state.stroke = '#000000'; state.sw = 0; state.blur = 0; state.sx = 0; state.sy = 0;
       state.overlap = -60 + Math.floor(Math.random()*180) - 30;
       ui.font.value = state.font; ui.size.value = state.size; ui.tracking.value = state.track; ui.slant.value = state.slant; ui.arc.value = state.arc; ui.rotate.value = state.rot; ui.fill.value = state.fill; ui.stroke.value = state.stroke; ui.strokeW.value = state.sw; ui.blur.value = state.blur; ui.sx.value = state.sx; ui.sy.value = state.sy; ui.overlap.value = state.overlap; apply();
@@ -347,9 +372,6 @@
     // 初期化
     apply(); setMode('normal');
   </script>
-  <p style="text-align:center; margin-top:30px;">
-    <a href="howto.html">使い方・注意事項はこちら</a>
-</p>
-
 </body>
 </html>
+
