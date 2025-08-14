@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Letter Tattoo Designer – 10 Fonts + Monogram</title>
+  <!-- Google Fonts (10種) -->
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Dancing+Script:wght@400..700&family=Ewert&family=Great+Vibes&family=Italianno&family=Metal+Mania&family=Pinyon+Script&family=Prata&family=Satisfy&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#ffffff; --panel:#ffffff; --muted:#e5e7eb; --text:#111111; --accent:#0066cc;
+      --control:#111111; --control-bg:#f8fafc; --control-border:#d1d5db;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text); background:var(--bg); display:flex; flex-direction:column;
+    }
+    .app{display:grid; grid-template-columns:360px 1fr; gap:16px; padding:14px; flex:1}
+    @media(max-width:980px){.app{grid-template-columns:1fr; min-height:100vh}}
+    .panel{background:var(--panel); border:1px solid var(--muted); border-radius:16px; padding:14px 14px 16px}
+    h1{font-size:18px; margin:4px 0 12px; color:var(--text)}
+    .row{margin:10px 0 14px}
+    label{display:block; font-size:12px; opacity:.9; margin-bottom:6px; color:var(--text)}
+    input[type="text"], select{
+      width:100%; padding:10px 12px; background:var(--control-bg); color:var(--control);
+      border:1px solid var(--control-border); border-radius:12px
+    }
+    input[type="range"]{width:100%}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .btns{display:flex; flex-wrap:wrap; gap:8px}
+    button{background:#ffffff; color:var(--text); border:1px solid var(--control-border); padding:10px 12px; border-radius:12px; cursor:pointer}
+    button.primary{background:#f2f6ff; border-color:#c7d7ff}
+    .mode{display:flex; gap:8px}
+    .mode button{flex:1}
+    .stage{position:relative; overflow:hidden}
+    .canvas-wrap{position:relative; border-radius:16px; overflow:hidden; background:#ffffff}
+    .checker{position:absolute; inset:0; background-image:linear-gradient(45deg,#f3f4f6 25%, transparent 25%), linear-gradient(-45deg,#f3f4f6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f3f4f6 75%), linear-gradient(-45deg, transparent 75%, #f3f4f6 75%); background-size:20px 20px; background-position:0 0,0 10px,10px -10px,-10px 0}
+    .svg-host{position:relative; width:100%; aspect-ratio:4/3; display:block; background:transparent}
+    .watermark{position:absolute; right:10px; bottom:10px; font-size:12px; opacity:.55; background:rgba(0,0,0,.04); color:#111; padding:6px 10px; border-radius:999px}
+    .small{font-size:12px; opacity:.9; color:var(--text)}
+    .hidden{display:none}
+    .pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; background:#f3f4f6; border:1px solid #e5e7eb; padding:6px 10px; border-radius:999px; color:#111}
+    footer{position:fixed; left:0; right:0; bottom:0; font-size:12px; text-align:center; padding:10px; background:#ffffff; color:#111; border-top:1px solid #e5e7eb}
+    footer a{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <h1>Letter Tattoo Designer（10 Fonts + Monogram）</h1>
+
+      <div class="row mode">
+        <button id="modeNormal" class="primary">通常モード</button>
+        <button id="modeMono">モノグラム</button>
+      </div>
+
+      <div class="row" id="rowText">
+        <label>テキスト <span id="limitNote" class="small" style="margin-left:6px">通常: 最大20文字</span></label>
+        <input id="text" type="text" value="ABCDE" maxlength="20" placeholder="例：ABCDE / A / 07"/>
+      </div>
+
+      <div class="row" id="rowMono" style="display:none">
+        <label>モノグラム文字（1〜10文字 / 推奨2〜3）</label>
+        <input id="monoText" type="text" value="AYO" maxlength="10" placeholder="例：AYO / LVR / 07A"/>
+        <div class="small" style="margin-top:6px">中央縦並びで重ねます。ランダムで微調整も可能。</div>
+      </div>
+
+      <div class="row">
+        <label>フォント（全10種）</label>
+        <select id="font">
+          <option value="UnifrakturCook">UnifrakturCook（超ゴシック）</option>
+          <option value="Ewert">Ewert（装飾カーブ）</option>
+          <option value="Metal Mania">Metal Mania（メタル）</option>
+          <option value="Great Vibes">Great Vibes（優雅筆記）</option>
+          <option value="Dancing Script">Dancing Script（軽やか筆記）</option>
+          <option value="Allura">Allura（サイン風）</option>
+          <option value="Italianno">Italianno（流麗）</option>
+          <option value="Pinyon Script">Pinyon Script（高級感）</option>
+          <option value="Satisfy">Satisfy（レトロ）</option>
+          <option value="Prata">Prata（比較用）</option>
+        </select>
+      </div>
+
+      <div class="row grid">
+        <div>
+          <label>サイズ <span id="sizeVal" class="small">140</span> px</label>
+          <input id="size" type="range" min="40" max="260" value="140"/>
+        </div>
+        <div>
+          <label>文字間隔（トラッキング） <span id="trackVal" class="small">0</span> px</label>
+          <input id="tracking" type="range" min="-40" max="120" value="0"/>
+        </div>
+      </div>
+
+      <div class="row grid" id="rowNormalOnly">
+        <div>
+          <label>傾き（スラント） <span id="slantVal" class="small">0°</span></label>
+          <input id="slant" type="range" min="-15" max="20" value="0"/>
+        </div>
+        <div>
+          <label>アーチ（円弧） <span id="arcVal" class="small">0%</span></label>
+          <input id="arc" type="range" min="-100" max="100" value="0"/>
+        </div>
+      </div>
+
+      <div class="row grid">
+        <div>
+          <label>回転 <span id="rotVal" class="small">0°</span></label>
+          <input id="rotate" type="range" min="-180" max="180" value="0"/>
+        </div>
+        <div>
+          <label>重なり（モノグラム） <span id="overlapVal" class="small">-30%</span></label>
+          <input id="overlap" type="range" min="-80" max="120" value="-30"/>
+        </div>
+      </div>
+
+      <div class="row grid">
+        <div>
+          <label>塗り（Fill）</label>
+          <input id="fill" type="color" value="#000000"/>
+        </div>
+        <div>
+          <label>縁取り（Stroke）</label>
+          <input id="stroke" type="color" value="#000000"/>
+        </div>
+        <div>
+          <label>縁の太さ</label>
+          <input id="strokeW" type="range" min="0" max="16" value="0"/>
+        </div>
+        <div>
+          <label>影ぼかし <span id="blurVal" class="small">0</span> px</label>
+          <input id="blur" type="range" min="0" max="24" value="0"/>
+        </div>
+      </div>
+
+      <div class="row grid">
+        <div>
+          <label>影距離X <span id="sxVal" class="small">0</span> px</label>
+          <input id="sx" type="range" min="-40" max="40" value="0"/>
+        </div>
+        <div>
+          <label>影距離Y <span id="syVal" class="small">0</span> px</label>
+          <input id="sy" type="range" min="-40" max="40" value="0"/>
+        </div>
+      </div>
+
+      <div class="row btns">
+        <button id="upper">大文字</button>
+        <button id="lower">小文字</button>
+        <button id="random">ランダム</button>
+        <button id="reset">リセット</button>
+        <button id="savePNG" class="primary">PNG保存（透過）</button>
+        <button id="saveSVG" class="primary">SVG保存</button>
+      </div>
+      <div class="small">※ 保存した画像は、そのまま <strong>ARタトゥー試着</strong> にアップして使えます。</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><span class="pill">モノグラム既定: 中央縦並び</span><span class="pill">最大10文字</span><span class="pill">フォント10種</span></div>
+    </aside>
+
+    <main class="panel stage">
+      <div class="canvas-wrap">
+        <div class="checker"></div>
+        <!-- SVG ステージ -->
+        <svg id="svg" class="svg-host" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200">
+          <defs>
+            <filter id="shadowFilter" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="0" flood-color="#000" flood-opacity=".6"/>
+            </filter>
+            <path id="arcPath" d="M 200 600 C 600 600 1000 600  1400 600"/>
+          </defs>
+          <g id="group" transform="translate(800,600) rotate(0)">
+            <!-- 通常テキストモード（黒） -->
+            <text id="textNode" x="0" y="0" text-anchor="middle" dominant-baseline="middle">ABCDE</text>
+            <text id="pathText" class="hidden"><textPath href="#arcPath" startOffset="50%" text-anchor="middle">ABCDE</textPath></text>
+            <!-- モノグラム用グループ（黒） -->
+            <g id="monoGroup" class="hidden"></g>
+          </g>
+        </svg>
+        <div class="watermark">Letter Designer</div>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    本アプリでは Google Fonts を利用しています。フォントは SIL Open Font License 1.1 のもとでライセンスされています。
+    詳細: <a href="https://fonts.google.com/" target="_blank">https://fonts.google.com/</a>
+  </footer>
+
+  <script>
+    const $ = (s)=>document.querySelector(s);
+    const svg = $('#svg');
+    const group = $('#group');
+    const textNode = $('#textNode');
+    const pathText = $('#pathText');
+    const arcPath = $('#arcPath');
+    const monoGroup = $('#monoGroup');
+
+    const ui = {
+      modeNormal: $('#modeNormal'), modeMono: $('#modeMono'),
+      rowText: $('#rowText'), rowMono: $('#rowMono'), rowNormalOnly: $('#rowNormalOnly'),
+      text: $('#text'), monoText: $('#monoText'), font: $('#font'), size: $('#size'), tracking: $('#tracking'), slant: $('#slant'), arc: $('#arc'), rotate: $('#rotate'), overlap: $('#overlap'),
+      fill: $('#fill'), stroke: $('#stroke'), strokeW: $('#strokeW'), blur: $('#blur'), sx: $('#sx'), sy: $('#sy'),
+      sizeVal: $('#sizeVal'), trackVal: $('#trackVal'), slantVal: $('#slantVal'), arcVal: $('#arcVal'), rotVal: $('#rotVal'), overlapVal: $('#overlapVal'), blurVal: $('#blurVal'), sxVal: $('#sxVal'), syVal: $('#syVal'),
+      reset: $('#reset'), random: $('#random'), upper: $('#upper'), lower: $('#lower'), savePNG: $('#savePNG'), saveSVG: $('#saveSVG'), limitNote: $('#limitNote')
+    };
+
+    let state = {
+      mode: 'normal',
+      txt: ui.text.value,
+      mono: ui.monoText.value,
+      font: ui.font.value,
+      size: +ui.size.value,
+      track: +ui.tracking.value,
+      slant: +ui.slant?.value || 0,
+      arc: +ui.arc?.value || 0,
+      rot: +ui.rotate.value,
+      overlap: +ui.overlap.value,
+      fill: ui.fill.value,
+      stroke: ui.stroke.value,
+      sw: +ui.strokeW.value,
+      blur: +ui.blur.value,
+      sx: +ui.sx.value,
+      sy: +ui.sy.value,
+    };
+
+    function setMode(m){
+      state.mode = m;
+      const normal = (m==='normal');
+      ui.rowText.style.display = normal ? '' : 'none';
+      ui.rowMono.style.display = normal ? 'none' : '';
+      ui.rowNormalOnly.style.display = normal ? '' : 'none';
+      ui.limitNote.textContent = normal ? '通常: 最大20文字' : 'モノグラム: 最大10文字（推奨2〜3）';
+      textNode.setAttribute('visibility', normal ? 'visible':'hidden');
+      pathText.classList.add('hidden');
+      monoGroup.classList.toggle('hidden', normal);
+      apply();
+      ui.modeNormal.classList.toggle('primary', normal);
+      ui.modeMono.classList.toggle('primary', !normal);
+    }
+
+    ui.modeNormal.addEventListener('click', ()=> setMode('normal'));
+    ui.modeMono.addEventListener('click', ()=> setMode('mono'));
+
+    function updateNormal(){
+      // テキスト反映
+      textNode.textContent = state.txt;
+      pathText.firstElementChild.textContent = state.txt;
+      // アーチ
+      const h = 600; const amp = state.arc; const y1=h+amp, y2=h-amp, y3=h+amp;
+      arcPath.setAttribute('d', `M 200 ${y1} C 600 ${y2} 1000 ${y2} 1400 ${y3}`);
+      if(Math.abs(state.arc) > 2){ textNode.setAttribute('visibility','hidden'); pathText.classList.remove('hidden'); }
+      else { textNode.setAttribute('visibility','visible'); pathText.classList.add('hidden'); }
+      // スタイル（黒文字）
+      const style = `font-family:${state.font}; font-size:${state.size}px; letter-spacing:${state.track}px; fill:${state.fill}; stroke:${state.stroke}; stroke-width:${state.sw}; paint-order: stroke fill; transform:skewX(${state.slant}deg);`;
+      textNode.setAttribute('style', style);
+      pathText.setAttribute('style', style);
+      // 影（白背景なのでデフォルト0）
+      const fe = svg.querySelector('#shadowFilter feDropShadow');
+      fe.setAttribute('dx', state.sx); fe.setAttribute('dy', state.sy); fe.setAttribute('stdDeviation', state.blur);
+      group.setAttribute('filter', state.blur>0 ? 'url(#shadowFilter)':'' );
+    }
+
+    function clearChildren(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+
+    function updateMonogram(){
+      clearChildren(monoGroup);
+      const chars = (state.mono || '').slice(0,10).split('');
+      if(chars.length===0){ return; }
+      const base = state.size; const overlapPx = base * (state.overlap/100);
+      chars.forEach((ch, i)=>{
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        const scale = (i===0)? 1 : Math.max(0.7, 1 - i*0.08);
+        const y = (i===0)? 0 : i * (base*0.9 + overlapPx);
+        t.setAttribute('x','0'); t.setAttribute('y', y.toString());
+        t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+        t.textContent = ch;
+        const style = `font-family:${state.font}; font-size:${base*scale}px; letter-spacing:${state.track}px; fill:${state.fill}; stroke:${state.stroke}; stroke-width:${state.sw}; paint-order: stroke fill;`;
+        t.setAttribute('style', style);
+        monoGroup.appendChild(t);
+      });
+      const totalH = (chars.length===1) ? base : (chars.length-1)*(base*0.9 + overlapPx) + base;
+      monoGroup.setAttribute('transform', `translate(0, ${-totalH/2})`);
+      // 影
+      const fe = svg.querySelector('#shadowFilter feDropShadow');
+      fe.setAttribute('dx', state.sx); fe.setAttribute('dy', state.sy); fe.setAttribute('stdDeviation', state.blur);
+      group.setAttribute('filter', state.blur>0 ? 'url(#shadowFilter)':'' );
+    }
+
+    function apply(){
+      // 回転
+      group.setAttribute('transform', `translate(800,600) rotate(${state.rot})`);
+      if(state.mode==='normal') updateNormal(); else updateMonogram();
+      // UIラベル
+      ui.sizeVal.textContent = state.size; ui.trackVal.textContent = state.track; ui.slantVal.textContent = `${state.slant}°`; ui.arcVal.textContent = `${state.arc}%`; ui.rotVal.textContent = `${state.rot}°`; ui.overlapVal.textContent = `${state.overlap}%`; ui.blurVal.textContent = state.blur; ui.sxVal.textContent = state.sx; ui.syVal.textContent = state.sy;
+    }
+
+    // 入力バインド
+    ui.text.addEventListener('input', e=>{ state.txt = e.target.value; apply(); });
+    ui.monoText.addEventListener('input', e=>{ state.mono = e.target.value; apply(); });
+    ui.font.addEventListener('change', e=>{ state.font = e.target.value; apply(); });
+    ui.size.addEventListener('input', e=>{ state.size = +e.target.value; apply(); });
+    ui.tracking.addEventListener('input', e=>{ state.track = +e.target.value; apply(); });
+    ui.slant.addEventListener('input', e=>{ state.slant = +e.target.value; apply(); });
+    ui.arc.addEventListener('input', e=>{ state.arc = +e.target.value; apply(); });
+    ui.rotate.addEventListener('input', e=>{ state.rot = +e.target.value; apply(); });
+    ui.overlap.addEventListener('input', e=>{ state.overlap = +e.target.value; apply(); });
+    ui.fill.addEventListener('input', e=>{ state.fill = e.target.value; apply(); });
+    ui.stroke.addEventListener('input', e=>{ state.stroke = e.target.value; apply(); });
+    ui.strokeW.addEventListener('input', e=>{ state.sw = +e.target.value; apply(); });
+    ui.blur.addEventListener('input', e=>{ state.blur = +e.target.value; apply(); });
+    ui.sx.addEventListener('input', e=>{ state.sx = +e.target.value; apply(); });
+    ui.sy.addEventListener('input', e=>{ state.sy = +e.target.value; apply(); });
+
+    ui.upper.addEventListener('click', ()=>{
+      if(state.mode==='normal'){ state.txt = state.txt.toUpperCase(); ui.text.value = state.txt; }
+      else { state.mono = state.mono.toUpperCase(); ui.monoText.value = state.mono; }
+      apply();
+    });
+    ui.lower.addEventListener('click', ()=>{
+      if(state.mode==='normal'){ state.txt = state.txt.toLowerCase(); ui.text.value = state.txt; }
+      else { state.mono = state.mono.toLowerCase(); ui.monoText.value = state.mono; }
+      apply();
+    });
+
+    ui.reset.addEventListener('click', ()=>{
+      state = { mode: state.mode, txt:'ABCDE', mono:'AYO', font:'UnifrakturCook', size:140, track:0, slant:0, arc:0, rot:0, overlap:-30, fill:'#000000', stroke:'#000000', sw:0, blur:0, sx:0, sy:0 };
+      ui.text.value = state.txt; ui.monoText.value = state.mono; ui.font.value = state.font; ui.size.value = state.size; ui.tracking.value = state.track; ui.slant.value = state.slant; ui.arc.value = state.arc; ui.rotate.value = state.rot; ui.overlap.value = state.overlap; ui.fill.value = state.fill; ui.stroke.value = state.stroke; ui.strokeW.value = state.sw; ui.blur.value = state.blur; ui.sx.value = state.sx; ui.sy.value = state.sy; apply();
+    });
+
+    ui.random.addEventListener('click', ()=>{
+      const fonts = Array.from(ui.font.options).map(o=>o.value);
+      const pick = (a)=> a[Math.floor(Math.random()*a.length)];
+      state.font = pick(fonts);
+      state.size = 90 + Math.floor(Math.random()*130);
+      state.track = -20 + Math.floor(Math.random()*140);
+      state.slant = -10 + Math.floor(Math.random()*20);
+      state.arc = -50 + Math.floor(Math.random()*100);
+      state.rot = -15 + Math.floor(Math.random()*30);
+      state.fill = '#000000'; // 常に黒出力推奨
+      state.stroke = '#000000'; state.sw = 0; state.blur = 0; state.sx = 0; state.sy = 0;
+      state.overlap = -60 + Math.floor(Math.random()*180) - 30;
+      ui.font.value = state.font; ui.size.value = state.size; ui.tracking.value = state.track; ui.slant.value = state.slant; ui.arc.value = state.arc; ui.rotate.value = state.rot; ui.fill.value = state.fill; ui.stroke.value = state.stroke; ui.strokeW.value = state.sw; ui.blur.value = state.blur; ui.sx.value = state.sx; ui.sy.value = state.sy; ui.overlap.value = state.overlap; apply();
+    });
+
+    // 初期化
+    apply(); setMode('normal');
+  </script>
+</body>
+</html>
